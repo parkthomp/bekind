@@ -8,7 +8,7 @@ interface AddPlayerProps {
 export default function AddPlayer({ addPlayer }: AddPlayerProps) {
   const [inputValue, setInputValue] = useState("");
   return (
-    <div className='flex gap-2'>
+    <div className='flex flex-col gap-2 md:flex-row'>
       <input
         className='text-black font-bold py-2 px-4 rounded'
         type='text'

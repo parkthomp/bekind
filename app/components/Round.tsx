@@ -54,7 +54,7 @@ export default function Round({
           {totalBids}
         </span>
       </div>
-      <div className='grid grid-flow-row grid-cols-6 gap-2'>
+      <div className='grid grid-flow-row lg:grid-cols-6 grid-cols-1 gap-2'>
         {players.map((player, index) => (
           <div
             key={index}
