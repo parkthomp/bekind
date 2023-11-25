@@ -286,7 +286,7 @@ export default function Home() {
         <div className='flex flex-col items-start gap-6 border border-white rounded-lg p-6'>
           <h1 className='text-2xl font-bold'>Players</h1>
           <AddPlayer addPlayer={addPlayer} />
-          <div className='flex flex-row gap-2'>
+          <div className='flex flex-row gap-2 flex-wrap'>
             {players.map((player, index) => (
               <div key={index} className='flex flex-col'>
                 <h1 className='text-1xl font-bold'>
@@ -314,7 +314,7 @@ export default function Home() {
       {gameStarted && (
         <div className='flex flex-col items-start gap-6 border border-white rounded-lg p-6'>
           <h1 className='text-2xl font-bold'>Players</h1>
-          <div className='flex flex-row gap-6'>
+          <div className='flex flex-row gap-6 flex-wrap'>
             {players
               .slice() // Create a shallow copy to avoid mutating the original array
               .sort((a, b) => getScore(b) - getScore(a)) // Sort players by score in descending order
