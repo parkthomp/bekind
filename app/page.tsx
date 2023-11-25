@@ -282,9 +282,10 @@ export default function Home() {
 
   return (
     <main className='flex min-h-screen flex-col p-12 gap-12'>
+      <h1 className='text-4xl font-bold'>Be Kind to Your Neighbor</h1>
       {!gameStarted && (
         <div className='flex flex-col items-start gap-6 border border-white rounded-lg p-6'>
-          <h1 className='text-2xl font-bold'>Players</h1>
+          <h1 className='text-2xl font-bold'>Add Players</h1>
           <AddPlayer addPlayer={addPlayer} />
           <div className='flex flex-row gap-2 flex-wrap'>
             {players.map((player, index) => (
