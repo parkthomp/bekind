@@ -179,6 +179,35 @@ export default function Home() {
     setShowCancelModal(false);
   };
 
+  const goToNextRound = () => {
+    setCurrentRound(currentRound + 1);
+  };
+
+  // const calculateRounds = () => {
+  //   const cards = 52;
+  //   const maxRounds = 7;
+  //   const cardsLeft = cards - 1 % players.length;
+  //   // determine if there are cards left over after calculating cards left
+  //   // if there are cards left over, add 7 rounds to the total rounds
+  //   // if there are no cards left over, add only the amount of rounds there can be with cards left over
+  //   const totalRounds =
+  //     cardsLeft > 0
+  //       ? maxRounds + Math.floor(cardsLeft / players.length)
+  //       : Math.floor(cardsLeft / players.length);
+  //   const rounds = [];
+  //   for (let i = 0; i < totalRounds; i++) {
+  //     rounds.push({
+  //       index: i,
+  //       name: `Round ${i + 1}`,
+  //       tricks: i + 1,
+  //       bid: 0,
+  //       won: 0,
+  //       complete: false,
+  //     });
+  //   }
+
+  // };
+
   const addPlayer = (playerName: string) => {
     players.length > 0
       ? setPlayers([
@@ -278,6 +307,7 @@ export default function Home() {
         }
       })
     );
+    goToNextRound();
   };
 
   return (
@@ -286,7 +316,11 @@ export default function Home() {
       {!gameStarted && (
         <div className='flex flex-col items-start gap-6 border border-white rounded-lg p-6'>
           <h1 className='text-2xl font-bold'>Add Players</h1>
-          <AddPlayer addPlayer={addPlayer} />
+          {players.length < 53 ? (
+            <AddPlayer addPlayer={addPlayer} />
+          ) : (
+            <span>Max amount of players reached</span>
+          )}
           <div className='flex flex-row gap-2 flex-wrap'>
             {players.map((player, index) => (
               <div key={index} className='flex flex-col'>
