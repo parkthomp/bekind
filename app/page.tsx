@@ -135,23 +135,24 @@ interface Player {
 }
 
 export default function Home() {
-  const [rounds, setRounds] = useState<Round[]>(() => {
-    const saved = localStorage.getItem("rounds");
-    return saved ? JSON.parse(saved) : roundDefaults;
-  });
-  const [players, setPlayers] = useState<Player[]>(() => {
-    const saved = localStorage.getItem("players");
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [currentRound, setCurrentRound] = useState(() => {
-    const saved = localStorage.getItem("currentRound");
-    return saved ? JSON.parse(saved) : 0;
-  });
-  const [gameStarted, setGameStarted] = useState(() => {
-    const saved = localStorage.getItem("gameStarted");
-    return saved ? JSON.parse(saved) : false;
-  });
+  const [rounds, setRounds] = useState<Round[]>(roundDefaults);
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [currentRound, setCurrentRound] = useState(0);
+  const [gameStarted, setGameStarted] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
+
+  // Load state from localStorage after component mounts
+  useEffect(() => {
+    const savedRounds = localStorage.getItem("rounds");
+    const savedPlayers = localStorage.getItem("players");
+    const savedCurrentRound = localStorage.getItem("currentRound");
+    const savedGameStarted = localStorage.getItem("gameStarted");
+
+    if (savedRounds) setRounds(JSON.parse(savedRounds));
+    if (savedPlayers) setPlayers(JSON.parse(savedPlayers));
+    if (savedCurrentRound) setCurrentRound(JSON.parse(savedCurrentRound));
+    if (savedGameStarted) setGameStarted(JSON.parse(savedGameStarted));
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("players", JSON.stringify(players));
