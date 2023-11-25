@@ -60,8 +60,8 @@ export default function Round({
             className='flex flex-col gap-2 p-2 rounded border border-white'
           >
             <h2 className='text-xl font-bold'>{player.name.toUpperCase()}</h2>
-            <div className='flex flex-col gap-2'>
-              <div className='flex flex-row gap-2 w-full'>
+            <div className='flex flex-col gap-4'>
+              <div className='flex flex-row gap-2 w-full items-center'>
                 <h3 className='text-l'>bid: </h3>
                 <h3 className='text-xl font-bold'>
                   {player.rounds[roundIndex].bid}
@@ -89,7 +89,7 @@ export default function Round({
                   />
                 )}
               </div>
-              <div className='flex flex-row gap-2 w-full'>
+              <div className='flex flex-row gap-2 w-full items-center'>
                 <h3 className='text-l'>won:</h3>
                 <h3 className='text-xl font-bold'>
                   {player.rounds[roundIndex].won}
