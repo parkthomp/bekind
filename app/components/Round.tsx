@@ -32,9 +32,23 @@ export default function Round({
   setWon,
   toggleRoundComplete,
 }: RoundProps) {
+  const totalBids = players.reduce(
+    (acc, player) => acc + player.rounds[roundIndex].bid,
+    0
+  );
   return (
     <div className='flex flex-col gap-6'>
       <h1 className='text-2xl font-bold'>Round: {round.name}</h1>
+      <div className={`flex flex-row gap-2`}>
+        Bids:
+        <span
+          className={`flex flex-col gap-2 ${
+            totalBids > round.tricks && "text-red-600"
+          }`}
+        >
+          {totalBids}
+        </span>
+      </div>
       <div className='grid grid-flow-row grid-cols-6 gap-2'>
         {players.map((player, index) => (
           <div
