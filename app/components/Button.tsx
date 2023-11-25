@@ -47,7 +47,7 @@ export default function Button({
       classes += " bg-blue-500 hover:bg-blue-700";
       break;
   }
-  small ? (classes += " py-2 px-4 m:py-0 m:px-2") : (classes += " py-2 px-4");
+  small ? (classes += " py-4 px-8 md:py-1 md:px-3") : (classes += " py-2 px-4");
   return (
     <button onClick={action && action} className={classes} disabled={disabled}>
       {label}
