@@ -1,113 +1,353 @@
-import Image from 'next/image'
+"use client";
+
+import AddPlayer from "./components/AddPlayer";
+import Button from "./components/Button";
+import Round from "./components/Round";
+import { useState, useEffect } from "react";
+
+const roundDefaults = [
+  {
+    index: 0,
+    name: "one",
+    tricks: 1,
+    complete: false,
+    bid: 0,
+    won: 0,
+  },
+  {
+    index: 1,
+    name: "two",
+    tricks: 2,
+    complete: false,
+    bid: 0,
+    won: 0,
+  },
+  {
+    index: 2,
+    name: "three",
+    tricks: 3,
+    complete: false,
+    bid: 0,
+    won: 0,
+  },
+  {
+    index: 3,
+    name: "four",
+    tricks: 4,
+    complete: false,
+    bid: 0,
+    won: 0,
+  },
+  {
+    index: 4,
+    name: "five",
+    tricks: 5,
+    complete: false,
+    bid: 0,
+    won: 0,
+  },
+  {
+    index: 5,
+    name: "six",
+    tricks: 6,
+    complete: false,
+    bid: 0,
+    won: 0,
+  },
+  {
+    index: 6,
+    name: "seven",
+    tricks: 7,
+    complete: false,
+    bid: 0,
+    won: 0,
+  },
+  {
+    index: 7,
+    name: "seven trumps",
+    tricks: 7,
+    complete: false,
+    bid: 0,
+    won: 0,
+  },
+  {
+    index: 8,
+    name: "six trumps",
+    tricks: 6,
+    complete: false,
+    bid: 0,
+    won: 0,
+  },
+  {
+    index: 9,
+    name: "five trumps",
+    tricks: 5,
+    complete: false,
+    bid: 0,
+    won: 0,
+  },
+  {
+    index: 10,
+    name: "four trumps",
+    tricks: 4,
+    complete: false,
+    bid: 0,
+    won: 0,
+  },
+  {
+    index: 11,
+    name: "three trumps",
+    tricks: 3,
+    complete: false,
+    bid: 0,
+    won: 0,
+  },
+  {
+    index: 12,
+    name: "two trumps",
+    tricks: 2,
+    complete: false,
+    bid: 0,
+    won: 0,
+  },
+  {
+    index: 13,
+    name: "one trump",
+    tricks: 1,
+    complete: false,
+    bid: 0,
+    won: 0,
+  },
+];
+
+interface Round {
+  index: number;
+  name: string;
+  tricks: number;
+  bid: number;
+  won: number;
+  complete: boolean;
+}
+
+interface Player {
+  name: string;
+  rounds: Round[];
+}
 
 export default function Home() {
+  const [rounds, setRounds] = useState<Round[]>(() => {
+    const saved = localStorage.getItem("rounds");
+    return saved ? JSON.parse(saved) : roundDefaults;
+  });
+  const [players, setPlayers] = useState<Player[]>(() => {
+    const saved = localStorage.getItem("players");
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [currentRound, setCurrentRound] = useState(() => {
+    const saved = localStorage.getItem("currentRound");
+    return saved ? JSON.parse(saved) : 0;
+  });
+  const [gameStarted, setGameStarted] = useState(() => {
+    const saved = localStorage.getItem("gameStarted");
+    return saved ? JSON.parse(saved) : false;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("players", JSON.stringify(players));
+  }, [players]);
+
+  useEffect(() => {
+    localStorage.setItem("rounds", JSON.stringify(rounds));
+  }, [rounds]);
+
+  useEffect(() => {
+    localStorage.setItem("gameStarted", JSON.stringify(gameStarted));
+  }, [gameStarted]);
+
+  useEffect(() => {
+    localStorage.setItem("currentRound", JSON.stringify(currentRound));
+  }, [currentRound]);
+
+  const addPlayer = (playerName: string) => {
+    players.length > 0
+      ? setPlayers([
+          ...players,
+          {
+            name: playerName,
+            rounds: rounds.map((round) => ({ ...round })),
+          },
+        ])
+      : setPlayers([
+          {
+            name: playerName,
+            rounds: rounds.map((round) => ({ ...round })),
+          },
+        ]);
+  };
+  const removePlayer = (index: number) => {
+    setPlayers(players.filter((player, i) => i !== index));
+  };
+
+  const getScore = (player: Player) => {
+    const calcScore = (bid: number, won: number) => {
+      if (bid === won) {
+        return 10 + bid;
+      } else {
+        return won;
+      }
+    };
+
+    return player.rounds.reduce((score, round) => {
+      if (rounds[round.index].complete) {
+        return score + calcScore(round.bid, round.won);
+      } else {
+        return score;
+      }
+    }, 0);
+  };
+
+  const setBid = (playerIndex: number, bid: number) => {
+    setPlayers(
+      players.map((player, index) => {
+        if (index === playerIndex) {
+          return {
+            ...player,
+            rounds: player.rounds.map((round, index) => {
+              if (index === currentRound) {
+                return {
+                  ...round,
+                  bid: bid,
+                };
+              } else {
+                return round;
+              }
+            }),
+          };
+        } else {
+          return player;
+        }
+      })
+    );
+  };
+
+  const setWon = (playerIndex: number, won: number) => {
+    setPlayers(
+      players.map((player, index) => {
+        if (index === playerIndex) {
+          return {
+            ...player,
+            rounds: player.rounds.map((round, index) => {
+              if (index === currentRound) {
+                return {
+                  ...round,
+                  won: won,
+                };
+              } else {
+                return round;
+              }
+            }),
+          };
+        } else {
+          return player;
+        }
+      })
+    );
+  };
+
+  const toggleRoundComplete = (roundIndex: number) => {
+    setRounds(
+      rounds.map((round, index) => {
+        if (index === roundIndex) {
+          return {
+            ...round,
+            complete: !round.complete,
+          };
+        } else {
+          return round;
+        }
+      })
+    );
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <main className='flex min-h-screen flex-col p-12 gap-12'>
+      {!gameStarted && (
+        <div className='flex flex-col items-start gap-6 border border-white rounded-lg p-6'>
+          <h1 className='text-2xl font-bold'>Players</h1>
+          <AddPlayer addPlayer={addPlayer} />
+          <div className='flex flex-row gap-2'>
+            {players.map((player, index) => (
+              <div key={index} className='flex flex-col'>
+                <h1 className='text-1xl font-bold'>
+                  {player.name.toUpperCase()}
+                </h1>
+                <Button
+                  label='remove'
+                  action={() => removePlayer(index)}
+                  small
+                  color='red'
+                />
+              </div>
+            ))}
+          </div>
+          <Button
+            label='start game'
+            action={() => setGameStarted(true)}
+            color='green'
+          />
         </div>
-      </div>
+      )}
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
+      {gameStarted && (
+        <div className='flex flex-col items-start gap-6 border border-white rounded-lg p-6'>
+          <h1 className='text-2xl font-bold'>Players</h1>
+          <div className='flex flex-row gap-6'>
+            {players
+              .slice() // Create a shallow copy to avoid mutating the original array
+              .sort((a, b) => getScore(b) - getScore(a)) // Sort players by score in descending order
+              .map((player, index) => (
+                <div key={index} className='flex flex-col'>
+                  <h1 className='text-1xl font-bold'>
+                    {player.name.toUpperCase()}
+                  </h1>
+                  <h2 className='text-xl'>{getScore(player)}</h2>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
+
+      {gameStarted && (
+        <div className='flex flex-col items-start gap-6 border border-white rounded-lg p-6'>
+          <h1 className='text-2xl font-bold'>Select round</h1>
+          <div className='flex gap-2 flex-wrap'>
+            {rounds.map((round, index) => (
+              <Button
+                key={index}
+                label={round.name}
+                action={() => setCurrentRound(index)}
+                color={
+                  round.index === currentRound
+                    ? "blue"
+                    : round.complete
+                    ? "green"
+                    : "gray"
+                }
+              />
+            ))}
+          </div>
+        </div>
+      )}
+      {gameStarted && (
+        <Round
+          round={rounds[currentRound]}
+          roundIndex={currentRound}
+          players={players}
+          setBid={setBid}
+          setWon={setWon}
+          toggleRoundComplete={toggleRoundComplete}
         />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+      )}
     </main>
-  )
+  );
 }
