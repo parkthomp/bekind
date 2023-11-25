@@ -372,7 +372,7 @@ export default function Home() {
         </div>
       )}
       {showCancelModal && (
-        <div className='flex flex-col items-center justify-center absolute top-0 bottom-0 left-0 right-0 bg-black bg-opacity-50'>
+        <div className='flex flex-col items-center justify-center fixed top-0 bottom-0 left-0 right-0 bg-black bg-opacity-50'>
           <div className='flex flex-col items-center gap-6 border border-white rounded-lg p-6 bg-black relative'>
             <h1 className='text-2xl font-bold'>
               Are you sure you want to reset the game?
