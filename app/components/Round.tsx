@@ -122,7 +122,7 @@ export default function Round({
         ))}
       </div>
       <div className='flex flex-col items-start w-full'>
-        {totalWins === round.tricks && (
+        {totalWins != 0 && totalWins === round.tricks ? (
           <Button
             label={round.complete ? "Mark as incomplete" : "Round complete"}
             action={
@@ -133,6 +133,10 @@ export default function Round({
             clicked={round.complete}
             color={round.complete ? "black" : "green"}
           />
+        ) : totalWins === 0 ? (
+          <span>Record wins to complete round</span>
+        ) : (
+          <span>Wins and tricks do not match</span>
         )}
       </div>
     </div>
