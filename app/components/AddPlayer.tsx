@@ -12,6 +12,7 @@ export default function AddPlayer({ addPlayer }: AddPlayerProps) {
       <input
         className='text-black font-bold py-2 px-4 rounded'
         type='text'
+        placeholder='Name'
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         onKeyDown={(e) => {
