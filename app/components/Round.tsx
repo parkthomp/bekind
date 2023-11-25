@@ -1,4 +1,3 @@
-import ScoreCard from "./ScoreCard";
 import Button from "./Button";
 
 interface Round {
