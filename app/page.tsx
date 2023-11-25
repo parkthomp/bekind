@@ -151,6 +151,7 @@ export default function Home() {
     const saved = localStorage.getItem("gameStarted");
     return saved ? JSON.parse(saved) : false;
   });
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   useEffect(() => {
     localStorage.setItem("players", JSON.stringify(players));
@@ -167,6 +168,15 @@ export default function Home() {
   useEffect(() => {
     localStorage.setItem("currentRound", JSON.stringify(currentRound));
   }, [currentRound]);
+
+  const resetGame = () => {
+    setPlayers([]);
+    setRounds(roundDefaults);
+    setCurrentRound(0);
+    setGameStarted(false);
+    localStorage.clear();
+    setShowCancelModal(false);
+  };
 
   const addPlayer = (playerName: string) => {
     players.length > 0
@@ -290,11 +300,13 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <Button
-            label='start game'
-            action={() => setGameStarted(true)}
-            color='green'
-          />
+          {players.length > 1 && (
+            <Button
+              label='start game'
+              action={() => setGameStarted(true)}
+              color='green'
+            />
+          )}
         </div>
       )}
 
@@ -347,6 +359,34 @@ export default function Home() {
           setWon={setWon}
           toggleRoundComplete={toggleRoundComplete}
         />
+      )}
+      {gameStarted && (
+        <div className='flex flex-col items-start max-w-xs mt-auto'>
+          <Button
+            label='reset game'
+            action={() => setShowCancelModal(true)}
+            color='red'
+          />
+        </div>
+      )}
+      {showCancelModal && (
+        <div className='flex flex-col items-center justify-center absolute top-0 bottom-0 left-0 right-0 bg-black bg-opacity-50'>
+          <div className='flex flex-col items-center gap-6 border border-white rounded-lg p-6 bg-black relative'>
+            <h1 className='text-2xl font-bold'>
+              Are you sure you want to reset the game?
+            </h1>
+            <div className='flex flex-row gap-2'>
+              <Button label='reset game' action={resetGame} color='red' />
+              <Button
+                label='cancel'
+                action={() => {
+                  setShowCancelModal(false);
+                }}
+                color='green'
+              />
+            </div>
+          </div>
+        </div>
       )}
     </main>
   );

@@ -103,13 +103,14 @@ export default function Round({
           </div>
         ))}
       </div>
-      <Button
-        label={round.complete ? "Mark as incomplete" : "Round complete"}
-        action={() => toggleRoundComplete(roundIndex)}
-        clicked={round.complete}
-        color={round.complete ? "black" : "green"}
-      />
-      {/* <ScoreCard /> */}
+      <div className='flex flex-col items-start w-full'>
+        <Button
+          label={round.complete ? "Mark as incomplete" : "Round complete"}
+          action={() => toggleRoundComplete(roundIndex)}
+          clicked={round.complete}
+          color={round.complete ? "black" : "green"}
+        />
+      </div>
     </div>
   );
 }
