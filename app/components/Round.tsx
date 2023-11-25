@@ -36,6 +36,11 @@ export default function Round({
     (acc, player) => acc + player.rounds[roundIndex].bid,
     0
   );
+
+  const totalWins = players.reduce(
+    (acc, player) => acc + player.rounds[roundIndex].won,
+    0
+  );
   return (
     <div className='flex flex-col gap-6'>
       <h1 className='text-2xl font-bold'>Round: {round.name}</h1>
@@ -118,12 +123,18 @@ export default function Round({
         ))}
       </div>
       <div className='flex flex-col items-start w-full'>
-        <Button
-          label={round.complete ? "Mark as incomplete" : "Round complete"}
-          action={() => toggleRoundComplete(roundIndex)}
-          clicked={round.complete}
-          color={round.complete ? "black" : "green"}
-        />
+        {totalWins === round.tricks && (
+          <Button
+            label={round.complete ? "Mark as incomplete" : "Round complete"}
+            action={
+              totalWins === round.tricks
+                ? () => toggleRoundComplete(roundIndex)
+                : () => alert("Wins and tricks do not match")
+            }
+            clicked={round.complete}
+            color={round.complete ? "black" : "green"}
+          />
+        )}
       </div>
     </div>
   );
