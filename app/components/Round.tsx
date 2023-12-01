@@ -103,6 +103,20 @@ export default function Round({
                       setWon(index, player.rounds[roundIndex].won + 1)
                     }
                     small
+                    disabled={
+                      players.reduce(
+                        (acc, player) => acc + player.rounds[roundIndex].won,
+                        0
+                      ) === round.tricks
+                    }
+                    color={
+                      players.reduce(
+                        (acc, player) => acc + player.rounds[roundIndex].won,
+                        0
+                      ) === round.tricks
+                        ? "gray"
+                        : "blue"
+                    }
                   />
                 )}
               </div>
