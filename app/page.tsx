@@ -4,6 +4,8 @@ import AddPlayer from "./components/AddPlayer";
 import Button from "./components/Button";
 import Round from "./components/Round";
 import { useState, useEffect } from "react";
+import ScoreCard from "./components/ScoreCard";
+import { getScore } from "./utils";
 
 const roundDefaults = [
   {
@@ -228,23 +230,23 @@ export default function Home() {
     setPlayers(players.filter((player, i) => i !== index));
   };
 
-  const getScore = (player: Player) => {
-    const calcScore = (bid: number, won: number) => {
-      if (bid === won) {
-        return 10 + bid;
-      } else {
-        return won;
-      }
-    };
+  // const getScore = (player: Player) => {
+  //   const calcScore = (bid: number, won: number) => {
+  //     if (bid === won) {
+  //       return 10 + bid;
+  //     } else {
+  //       return won;
+  //     }
+  //   };
 
-    return player.rounds.reduce((score, round) => {
-      if (rounds[round.index].complete) {
-        return score + calcScore(round.bid, round.won);
-      } else {
-        return score;
-      }
-    }, 0);
-  };
+  //   return player.rounds.reduce((score, round) => {
+  //     if (rounds[round.index].complete) {
+  //       return score + calcScore(round.bid, round.won);
+  //     } else {
+  //       return score;
+  //     }
+  //   }, 0);
+  // };
 
   const setBid = (playerIndex: number, bid: number) => {
     setPlayers(
@@ -352,13 +354,13 @@ export default function Home() {
           <div className='flex flex-row gap-6 flex-wrap'>
             {players
               .slice() // Create a shallow copy to avoid mutating the original array
-              .sort((a, b) => getScore(b) - getScore(a)) // Sort players by score in descending order
+              .sort((a, b) => getScore(rounds, b) - getScore(rounds, a)) // Sort players by score in descending order
               .map((player, index) => (
                 <div key={index} className='flex flex-col'>
                   <h1 className='text-1xl font-bold'>
                     {player.name.toUpperCase()}
                   </h1>
-                  <h2 className='text-xl'>{getScore(player)}</h2>
+                  <h2 className='text-xl'>{getScore(rounds, player)}</h2>
                 </div>
               ))}
           </div>
@@ -392,6 +394,12 @@ export default function Home() {
             setWon={setWon}
             toggleRoundComplete={toggleRoundComplete}
           />
+        </div>
+      )}
+      {gameStarted && (
+        <div className='flex flex-col items-start gap-6 border border-white rounded-lg p-6'>
+          <h1 className='text-2xl font-bold'>Scorecard</h1>
+          <ScoreCard rounds={rounds} players={players} />
         </div>
       )}
       {gameStarted && (
