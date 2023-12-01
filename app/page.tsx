@@ -367,7 +367,7 @@ export default function Home() {
 
       {gameStarted && (
         <div className='flex flex-col items-start gap-6 border border-white rounded-lg p-6'>
-          <h1 className='text-2xl font-bold'>Select round</h1>
+          <h1 className='text-2xl font-bold'>Rounds</h1>
           <div className='flex gap-2 flex-wrap'>
             {rounds.map((round, index) => (
               <Button
@@ -384,17 +384,15 @@ export default function Home() {
               />
             ))}
           </div>
+          <Round
+            round={rounds[currentRound]}
+            roundIndex={currentRound}
+            players={players}
+            setBid={setBid}
+            setWon={setWon}
+            toggleRoundComplete={toggleRoundComplete}
+          />
         </div>
-      )}
-      {gameStarted && (
-        <Round
-          round={rounds[currentRound]}
-          roundIndex={currentRound}
-          players={players}
-          setBid={setBid}
-          setWon={setWon}
-          toggleRoundComplete={toggleRoundComplete}
-        />
       )}
       {gameStarted && (
         <div className='flex flex-col items-start max-w-xs mt-auto'>
