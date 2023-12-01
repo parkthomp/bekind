@@ -182,7 +182,10 @@ export default function Home() {
   };
 
   const goToNextRound = () => {
-    setCurrentRound(currentRound + 1);
+    if (currentRound < rounds.length - 1) {
+      console.log("currentRound", currentRound);
+      setCurrentRound(currentRound + 1);
+    }
   };
 
   // const calculateRounds = () => {
