@@ -46,7 +46,13 @@ export default function Round({
         {players.map((player, index) => (
           <div
             key={index}
-            className='flex flex-col gap-2 p-2 rounded border border-white'
+            className={`flex flex-col gap-2 p-2 rounded border ${
+              !round.complete
+                ? "border-white"
+                : player.rounds[index].bid == player.rounds[index].won
+                ? "border-green-600"
+                : "border-red-600"
+            }`}
           >
             <h2 className='text-xl font-bold'>{player.name.toUpperCase()}</h2>
             <div className='flex flex-col gap-4'>
