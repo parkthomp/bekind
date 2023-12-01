@@ -42,17 +42,6 @@ export default function Round({
   );
   return (
     <div className='flex flex-col gap-6'>
-      <h1 className='text-2xl font-bold'>Round: {round.name}</h1>
-      <div className={`flex flex-row gap-2`}>
-        Bids:
-        <span
-          className={`flex flex-col gap-2 ${
-            totalBids > round.tricks && "text-red-600"
-          }`}
-        >
-          {totalBids}
-        </span>
-      </div>
       <div className='grid grid-flow-row lg:grid-cols-6 grid-cols-1 gap-2'>
         {players.map((player, index) => (
           <div
@@ -120,6 +109,16 @@ export default function Round({
             </div>
           </div>
         ))}
+      </div>
+      <div className={`flex flex-row gap-2`}>
+        Bids:
+        <span
+          className={`flex flex-col gap-2 ${
+            totalBids > round.tricks && "text-red-600"
+          }`}
+        >
+          {`${totalBids}/${round.tricks}`}
+        </span>
       </div>
       <div className='flex flex-col items-start w-full'>
         {totalWins != 0 && totalWins === round.tricks ? (
