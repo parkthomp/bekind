@@ -316,7 +316,7 @@ export default function Home() {
   };
 
   return (
-    <main className='flex min-h-screen flex-col p-12 gap-12'>
+    <main className='flex min-h-screen flex-col p-6 gap-12 max-w-fit'>
       <h1 className='text-4xl font-bold'>Be Kind to Your Neighbor</h1>
       {!gameStarted && (
         <div className='flex flex-col items-start gap-6 border border-white rounded-lg p-6'>
@@ -402,7 +402,9 @@ export default function Home() {
       {gameStarted && (
         <div className='flex flex-col items-start gap-6 border border-white rounded-lg p-6'>
           <h1 className='text-2xl font-bold'>Scorecard</h1>
-          <ScoreCard rounds={rounds} players={players} />
+          <div className='max-w-full overflow-auto'>
+            <ScoreCard rounds={rounds} players={players} />
+          </div>
         </div>
       )}
       {gameStarted && (
