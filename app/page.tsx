@@ -316,7 +316,7 @@ export default function Home() {
   };
 
   return (
-    <main className='flex min-h-screen flex-col p-6 gap-12 max-w-fit'>
+    <main className='flex min-h-screen flex-col p-6 gap-12'>
       <h1 className='text-4xl font-bold'>Be Kind to Your Neighbor</h1>
       {!gameStarted && (
         <div className='flex flex-col items-start gap-6 border border-white rounded-lg p-6'>
