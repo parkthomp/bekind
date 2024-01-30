@@ -7,120 +7,29 @@ import { useState, useEffect } from "react";
 import ScoreCard from "./components/ScoreCard";
 import { getScore } from "./utils";
 
-const roundDefaults = [
-  {
-    index: 0,
-    name: "one",
-    tricks: 1,
-    complete: false,
-    bid: 0,
-    won: 0,
-  },
-  {
-    index: 1,
-    name: "two",
-    tricks: 2,
-    complete: false,
-    bid: 0,
-    won: 0,
-  },
-  {
-    index: 2,
-    name: "three",
-    tricks: 3,
-    complete: false,
-    bid: 0,
-    won: 0,
-  },
-  {
-    index: 3,
-    name: "four",
-    tricks: 4,
-    complete: false,
-    bid: 0,
-    won: 0,
-  },
-  {
-    index: 4,
-    name: "five",
-    tricks: 5,
-    complete: false,
-    bid: 0,
-    won: 0,
-  },
-  {
-    index: 5,
-    name: "six",
-    tricks: 6,
-    complete: false,
-    bid: 0,
-    won: 0,
-  },
-  {
-    index: 6,
-    name: "seven",
-    tricks: 7,
-    complete: false,
-    bid: 0,
-    won: 0,
-  },
-  {
-    index: 7,
-    name: "seven trumps",
-    tricks: 7,
-    complete: false,
-    bid: 0,
-    won: 0,
-  },
-  {
-    index: 8,
-    name: "six trumps",
-    tricks: 6,
-    complete: false,
-    bid: 0,
-    won: 0,
-  },
-  {
-    index: 9,
-    name: "five trumps",
-    tricks: 5,
-    complete: false,
-    bid: 0,
-    won: 0,
-  },
-  {
-    index: 10,
-    name: "four trumps",
-    tricks: 4,
-    complete: false,
-    bid: 0,
-    won: 0,
-  },
-  {
-    index: 11,
-    name: "three trumps",
-    tricks: 3,
-    complete: false,
-    bid: 0,
-    won: 0,
-  },
-  {
-    index: 12,
-    name: "two trumps",
-    tricks: 2,
-    complete: false,
-    bid: 0,
-    won: 0,
-  },
-  {
-    index: 13,
-    name: "one trump",
-    tricks: 1,
-    complete: false,
-    bid: 0,
-    won: 0,
-  },
-];
+const roundNames = ["one", "two", "three", "four", "five", "six", "seven"];
+
+const generateRounds = () => {
+  const rounds = [];
+  let x = 0;
+  for (let i = 0; i < 14; i++) {
+    rounds.push({
+      index: i,
+      name: i < 7 ? roundNames[x] : `${roundNames[x]} trumps`,
+      tricks: x + 1,
+      bid: 0,
+      won: 0,
+      complete: false,
+    });
+    if (i < 6) {
+      x++;
+    } else if (i == 6) {
+    } else {
+      x--;
+    }
+  }
+  return rounds;
+};
 
 interface Round {
   index: number;
@@ -137,7 +46,7 @@ interface Player {
 }
 
 export default function Home() {
-  const [rounds, setRounds] = useState<Round[]>(roundDefaults);
+  const [rounds, setRounds] = useState<Round[]>(generateRounds());
   const [players, setPlayers] = useState<Player[]>([]);
   const [currentRound, setCurrentRound] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
@@ -174,7 +83,7 @@ export default function Home() {
 
   const resetGame = () => {
     setPlayers([]);
-    setRounds(roundDefaults);
+    setRounds(generateRounds());
     setCurrentRound(0);
     setGameStarted(false);
     localStorage.clear();
