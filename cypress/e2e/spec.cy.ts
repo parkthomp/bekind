@@ -1,7 +1,6 @@
-describe("My First Test", () => {
-  it("Visits the Kitchen Sink", () => {
-    cy.visit("https://example.cypress.io");
-    cy.contains("type").click();
-    cy.url().should("include", "/commands/actions");
+describe("Page load", () => {
+  it("Checks that the index page loads", () => {
+    cy.visit("http://localhost:3000");
+    cy.contains("BK2YN");
   });
 });
