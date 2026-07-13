@@ -27,9 +27,15 @@ yarn-error.log*
 
 # local env files
 .env*.local
+.env.cloudflare
+.dev.vars
 
 # vercel
 .vercel
+
+# partykit local dev state
+.partykit
+.wrangler
 
 # typescript
 *.tsbuildinfo

@@ -1,23 +1,11 @@
 import Button from "./Button";
-
-interface Round {
-  index: number;
-  name: string;
-  tricks: number;
-  bid: number;
-  won: number;
-  complete: boolean;
-}
-
-interface Player {
-  name: string;
-  rounds: Round[];
-}
+import type { Player, Round } from "../lib/types";
 
 interface RoundProps {
   round: Round;
   roundIndex: number;
   players: Player[];
+  readOnly?: boolean;
   setBid: (playerIndex: number, bid: number) => void;
   setWon: (playerIndex: number, won: number) => void;
   toggleRoundComplete: (roundIndex: number) => void;
@@ -27,6 +15,7 @@ export default function Round({
   round,
   roundIndex,
   players,
+  readOnly = false,
   setBid,
   setWon,
   toggleRoundComplete,
@@ -40,6 +29,7 @@ export default function Round({
     (acc, player) => acc + player.rounds[roundIndex].won,
     0
   );
+
   return (
     <div className='flex flex-col gap-6'>
       <div className='grid grid-flow-row lg:grid-cols-6 grid-cols-1 gap-2'>
@@ -49,7 +39,7 @@ export default function Round({
             className={`flex flex-col gap-2 p-2 rounded border ${
               !round.complete
                 ? "border-white"
-                : player.rounds[index].bid == player.rounds[index].won
+                : player.rounds[roundIndex].bid === player.rounds[roundIndex].won
                 ? "border-green-600"
                 : "border-red-600"
             }`}
@@ -61,7 +51,7 @@ export default function Round({
                 <h3 className='text-xl font-bold'>
                   {player.rounds[roundIndex].bid}
                 </h3>
-                {!round.complete && (
+                {!round.complete && !readOnly && (
                   <Button
                     label='-'
                     action={() =>
@@ -74,7 +64,7 @@ export default function Round({
                     }
                   />
                 )}
-                {!round.complete && (
+                {!round.complete && !readOnly && (
                   <Button
                     label='+'
                     action={() =>
@@ -89,7 +79,7 @@ export default function Round({
                 <h3 className='text-xl font-bold'>
                   {player.rounds[roundIndex].won}
                 </h3>
-                {!round.complete && (
+                {!round.complete && !readOnly && (
                   <Button
                     label='-'
                     action={() =>
@@ -102,27 +92,15 @@ export default function Round({
                     }
                   />
                 )}
-                {!round.complete && (
+                {!round.complete && !readOnly && (
                   <Button
                     label='+'
                     action={() =>
                       setWon(index, player.rounds[roundIndex].won + 1)
                     }
                     small
-                    disabled={
-                      players.reduce(
-                        (acc, player) => acc + player.rounds[roundIndex].won,
-                        0
-                      ) === round.tricks
-                    }
-                    color={
-                      players.reduce(
-                        (acc, player) => acc + player.rounds[roundIndex].won,
-                        0
-                      ) === round.tricks
-                        ? "gray"
-                        : "blue"
-                    }
+                    disabled={totalWins === round.tricks}
+                    color={totalWins === round.tricks ? "gray" : "blue"}
                   />
                 )}
               </div>
@@ -130,7 +108,7 @@ export default function Round({
           </div>
         ))}
       </div>
-      <div className={`flex flex-row gap-2`}>
+      <div className='flex flex-row gap-2'>
         Bids:
         <span
           className={`flex flex-col gap-2 ${
@@ -141,14 +119,20 @@ export default function Round({
         </span>
       </div>
       <div className='flex flex-col items-start w-full'>
-        {totalWins != 0 && totalWins === round.tricks ? (
+        {readOnly ? (
+          round.complete ? (
+            <span>Round complete</span>
+          ) : totalWins === 0 ? (
+            <span>Waiting for host to complete round</span>
+          ) : (
+            <span>
+              Wins recorded: {totalWins}/{round.tricks}
+            </span>
+          )
+        ) : totalWins !== 0 && totalWins === round.tricks ? (
           <Button
             label={round.complete ? "Mark as incomplete" : "Round complete"}
-            action={
-              totalWins === round.tricks
-                ? () => toggleRoundComplete(roundIndex)
-                : () => alert("Wins and tricks do not match")
-            }
+            action={() => toggleRoundComplete(roundIndex)}
             clicked={round.complete}
             color={round.complete ? "black" : "green"}
           />

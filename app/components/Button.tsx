@@ -49,7 +49,12 @@ export default function Button({
   }
   small ? (classes += " py-4 px-8 md:py-1 md:px-3") : (classes += " py-2 px-4");
   return (
-    <button onClick={action && action} className={classes} disabled={disabled}>
+    <button
+      type='button'
+      onClick={action}
+      className={classes}
+      disabled={disabled || !action}
+    >
       {label}
     </button>
   );

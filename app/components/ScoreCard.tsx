@@ -5,20 +5,7 @@ import {
   getScore,
   getBidAccuracy,
 } from "../utils";
-
-interface Round {
-  index: number;
-  name: string;
-  tricks: number;
-  bid: number;
-  won: number;
-  complete: boolean;
-}
-
-interface Player {
-  name: string;
-  rounds: Round[];
-}
+import type { Player, Round } from "../lib/types";
 
 interface ScoreCardProps {
   rounds: Round[];
@@ -29,32 +16,36 @@ export default function ScoreCard({ rounds, players }: ScoreCardProps) {
   return (
     <div className='mw-full overflow-x-auto'>
       <table>
-        <tr className='border border-b-white'>
-          <th className='py-2 px-4 border border-r-white'>Player</th>
-          <th className='py-2 px-4 border border-r-white'>Bids</th>
-          <th className='py-2 px-4 border border-r-white'>Good Rounds</th>
-          <th className='py-2 px-4 border border-r-white'>Bad Rounds</th>
-          <th className='py-2 px-4 border border-r-white'>Bid Accuracy</th>
-          <th className='py-2 px-4'>Score</th>
-        </tr>
-        {players.map((player, index) => (
-          <tr key={index} className='border border-b-white'>
-            <td className='py-2 px-4 border border-r-white'>{player.name}</td>
-            <td className='py-2 px-4 border border-r-white'>
-              {getBids(rounds, player)}
-            </td>
-            <td className='py-2 px-4 border border-r-white'>
-              {getGoodRounds(rounds, player)}
-            </td>
-            <td className='py-2 px-4 border border-r-white'>
-              {getBadRounds(rounds, player)}
-            </td>
-            <td className='py-2 px-4 border border-r-white'>
-              {getBidAccuracy(rounds, player)}
-            </td>
-            <td className='py-2 px-4'>{getScore(rounds, player)}</td>
+        <thead>
+          <tr className='border border-b-white'>
+            <th className='py-2 px-4 border border-r-white'>Player</th>
+            <th className='py-2 px-4 border border-r-white'>Bids</th>
+            <th className='py-2 px-4 border border-r-white'>Good Rounds</th>
+            <th className='py-2 px-4 border border-r-white'>Bad Rounds</th>
+            <th className='py-2 px-4 border border-r-white'>Bid Accuracy</th>
+            <th className='py-2 px-4'>Score</th>
           </tr>
-        ))}
+        </thead>
+        <tbody>
+          {players.map((player, index) => (
+            <tr key={index} className='border border-b-white'>
+              <td className='py-2 px-4 border border-r-white'>{player.name}</td>
+              <td className='py-2 px-4 border border-r-white'>
+                {getBids(rounds, player)}
+              </td>
+              <td className='py-2 px-4 border border-r-white'>
+                {getGoodRounds(rounds, player)}
+              </td>
+              <td className='py-2 px-4 border border-r-white'>
+                {getBadRounds(rounds, player)}
+              </td>
+              <td className='py-2 px-4 border border-r-white'>
+                {getBidAccuracy(rounds, player)}
+              </td>
+              <td className='py-2 px-4'>{getScore(rounds, player)}</td>
+            </tr>
+          ))}
+        </tbody>
       </table>
     </div>
   );
