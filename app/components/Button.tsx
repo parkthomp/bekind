@@ -14,7 +14,7 @@ export default function Button({
   disabled = false,
   color = "blue",
 }: ButtonProps) {
-  let classes = "text-white font-bold rounded cursor-pointer";
+  let classes = "text-white rounded cursor-pointer";
   switch (color) {
     case "red":
       classes += " bg-red-500 hover:bg-red-700";
@@ -50,7 +50,7 @@ export default function Button({
   small ? (classes += " py-4 px-8 md:py-1 md:px-3") : (classes += " py-2 px-4");
   return (
     <button onClick={action && action} className={classes} disabled={disabled}>
-      {label}
+      {label.toUpperCase()}
     </button>
   );
 }

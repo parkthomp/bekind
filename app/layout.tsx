@@ -15,12 +15,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang='en'>
       <body className={inter.className}>
-        <h1 className="text-5xl absolute top-8 left-8 font-extralight">
+        <h1 className='text-2xl absolute top-4 left-4 font-extralight'>
           BK2YN
         </h1>
-        {children}
+        <div className='flex flex-col items-center justify-center h-screen'>
+          {children}
+        </div>
       </body>
     </html>
   );
