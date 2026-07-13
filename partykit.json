@@ -1,0 +1,5 @@
+{
+  "name": "bekind-party",
+  "main": "party/index.ts",
+  "compatibilityDate": "2024-11-01"
+}

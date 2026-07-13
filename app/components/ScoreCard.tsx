@@ -5,20 +5,7 @@ import {
   getScore,
   getBidAccuracy,
 } from "../utils";
-
-interface Round {
-  index: number;
-  name: string;
-  tricks: number;
-  bid: number;
-  won: number;
-  complete: boolean;
-}
-
-interface Player {
-  name: string;
-  rounds: Round[];
-}
+import type { Player, Round } from "../lib/types";
 
 interface ScoreCardProps {
   rounds: Round[];
