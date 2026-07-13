@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import usePartySocket from "partysocket/react";
 import type { GameState } from "../lib/types";
-import { PARTYKIT_HOST } from "../lib/partykit";
+import { getPartykitHost } from "../lib/partykit";
 import { parseServerMessage } from "../lib/protocol";
 
 type ConnectionStatus = "connecting" | "connected" | "disconnected";
@@ -23,95 +23,111 @@ export function useHostGameSocket({
 }: UseHostGameSocketOptions) {
   const [status, setStatus] = useState<ConnectionStatus>("connecting");
   const [hostOnline, setHostOnline] = useState(false);
+  const [partykitHost, setPartykitHost] = useState("localhost:1999");
   const onStateRequestRef = useRef(onStateRequest);
   const hostTokenRef = useRef(hostToken);
+  const socketRef = useRef<ReturnType<typeof usePartySocket> | null>(null);
+
+  useEffect(() => {
+    setPartykitHost(getPartykitHost());
+  }, []);
 
   useEffect(() => {
     onStateRequestRef.current = onStateRequest;
     hostTokenRef.current = hostToken;
   }, [onStateRequest, hostToken]);
 
-  const socket = usePartySocket({
-    host: PARTYKIT_HOST,
-    room: roomId,
-    party: "main",
-    query: { role: "host" },
-    startClosed: !enabled,
-    onOpen() {
-      setStatus("connected");
-      socket.send(
-        JSON.stringify({
-          type: "register-host",
-          hostToken: hostTokenRef.current,
-        })
-      );
-    },
-    onClose() {
-      setStatus("disconnected");
-      setHostOnline(false);
-    },
-    onMessage(event) {
-      const message = parseServerMessage(event.data);
-      if (!message) {
-        return;
-      }
-
-      if (message.type === "register-host-ok") {
-        setHostOnline(true);
-        const state = onStateRequestRef.current();
-        socket.send(
+  const socketOptions = useMemo(
+    () => ({
+      host: partykitHost,
+      room: roomId,
+      party: "main",
+      query: { role: "host" as const },
+      startClosed: !enabled,
+      onOpen() {
+        setStatus("connected");
+        socketRef.current?.send(
           JSON.stringify({
-            type: "state-update",
+            type: "register-host",
             hostToken: hostTokenRef.current,
-            state,
           })
         );
-      }
+      },
+      onClose() {
+        setStatus("disconnected");
+        setHostOnline(false);
+      },
+      onMessage(event: MessageEvent) {
+        const message = parseServerMessage(event.data);
+        if (!message) {
+          return;
+        }
 
-      if (message.type === "state-request") {
-        const state = onStateRequestRef.current();
-        socket.send(
-          JSON.stringify({
-            type: "state-update",
-            hostToken: hostTokenRef.current,
-            state,
-          })
-        );
-      }
+        const ws = socketRef.current;
+        if (!ws) {
+          return;
+        }
 
-      if (message.type === "host-status") {
-        setHostOnline(message.online);
-      }
-    },
-  });
+        if (message.type === "register-host-ok") {
+          setHostOnline(true);
+          const state = onStateRequestRef.current();
+          ws.send(
+            JSON.stringify({
+              type: "state-update",
+              hostToken: hostTokenRef.current,
+              state,
+            })
+          );
+        }
+
+        if (message.type === "state-request") {
+          const state = onStateRequestRef.current();
+          ws.send(
+            JSON.stringify({
+              type: "state-update",
+              hostToken: hostTokenRef.current,
+              state,
+            })
+          );
+        }
+
+        if (message.type === "host-status") {
+          setHostOnline(message.online);
+        }
+      },
+    }),
+    [partykitHost, roomId, enabled]
+  );
+
+  const socket = usePartySocket(socketOptions);
+  socketRef.current = socket;
 
   useEffect(() => {
     if (enabled && roomId) {
       socket.reconnect();
-    } else {
-      socket.close();
-      setStatus("disconnected");
+      return;
     }
-  }, [enabled, roomId, hostToken, socket]);
 
-  const publishState = useCallback(
-    (state: GameState) => {
-      if (socket.readyState !== WebSocket.OPEN) {
-        return;
-      }
+    socket.close();
+    setStatus("disconnected");
+  }, [enabled, roomId, hostToken, partykitHost, socket]);
 
-      socket.send(
-        JSON.stringify({
-          type: "state-update",
-          hostToken: hostTokenRef.current,
-          state,
-        })
-      );
-    },
-    [socket]
-  );
+  const publishState = useCallback((state: GameState) => {
+    const ws = socketRef.current;
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      return;
+    }
 
-  return { status, hostOnline, publishState };
+    ws.send(
+      JSON.stringify({
+        type: "state-update",
+        hostToken: hostTokenRef.current,
+        state,
+      })
+    );
+  }, []);
+
+  return { status, hostOnline, publishState, partykitHost };
 }
 
 interface UseGuestGameSocketOptions {
@@ -122,40 +138,52 @@ interface UseGuestGameSocketOptions {
 export function useGuestGameSocket({ roomId, onState }: UseGuestGameSocketOptions) {
   const [status, setStatus] = useState<ConnectionStatus>("connecting");
   const [hostOnline, setHostOnline] = useState(false);
+  const [partykitHost, setPartykitHost] = useState("localhost:1999");
   const onStateRef = useRef(onState);
+  const socketRef = useRef<ReturnType<typeof usePartySocket> | null>(null);
+
+  useEffect(() => {
+    setPartykitHost(getPartykitHost());
+  }, []);
 
   useEffect(() => {
     onStateRef.current = onState;
   }, [onState]);
 
-  const socket = usePartySocket({
-    host: PARTYKIT_HOST,
-    room: roomId,
-    party: "main",
-    query: { role: "guest" },
-    onOpen() {
-      setStatus("connected");
-      socket.send(JSON.stringify({ type: "state-request" }));
-    },
-    onClose() {
-      setStatus("disconnected");
-      setHostOnline(false);
-    },
-    onMessage(event) {
-      const message = parseServerMessage(event.data);
-      if (!message) {
-        return;
-      }
+  const socketOptions = useMemo(
+    () => ({
+      host: partykitHost,
+      room: roomId,
+      party: "main",
+      query: { role: "guest" as const },
+      onOpen() {
+        setStatus("connected");
+        socketRef.current?.send(JSON.stringify({ type: "state-request" }));
+      },
+      onClose() {
+        setStatus("disconnected");
+        setHostOnline(false);
+      },
+      onMessage(event: MessageEvent) {
+        const message = parseServerMessage(event.data);
+        if (!message) {
+          return;
+        }
 
-      if (message.type === "state") {
-        onStateRef.current(message.state);
-      }
+        if (message.type === "state") {
+          onStateRef.current(message.state);
+        }
 
-      if (message.type === "host-status") {
-        setHostOnline(message.online);
-      }
-    },
-  });
+        if (message.type === "host-status") {
+          setHostOnline(message.online);
+        }
+      },
+    }),
+    [partykitHost, roomId]
+  );
 
-  return { status, hostOnline };
+  const socket = usePartySocket(socketOptions);
+  socketRef.current = socket;
+
+  return { status, hostOnline, partykitHost };
 }

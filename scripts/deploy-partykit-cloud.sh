@@ -1,14 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ -f .env.local ]]; then
+if [[ -f .env.cloudflare ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source .env.cloudflare
+  set +a
+elif [[ -f .env.local ]]; then
   set -a
   # shellcheck disable=SC1091
   source .env.local
   set +a
 fi
 
-: "${CLOUDFLARE_API_TOKEN:?Set CLOUDFLARE_API_TOKEN in .env.local}"
+: "${CLOUDFLARE_API_TOKEN:?Set CLOUDFLARE_API_TOKEN in .env.cloudflare}"
 
 PARTYKIT_DOMAIN="${PARTYKIT_DOMAIN:-bekind-party.parkert.workers.dev}"
 
