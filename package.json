@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "party": "partykit dev",
-    "party:deploy": "partykit deploy"
+    "party:deploy": "partykit deploy",
+    "party:deploy:cloud": "partykit deploy --domain $PARTYKIT_DOMAIN"
   },
   "dependencies": {
     "next": "14.0.3",

@@ -44,20 +44,51 @@ npm run dev
 
 ## Deployment
 
-### Next.js (Vercel)
+Managed `*.partykit.dev` hosting is currently unavailable (Cloudflare custom domain limit on the shared zone). Deploy to **your own Cloudflare account** instead.
 
-Set `NEXT_PUBLIC_PARTYKIT_HOST` to your deployed PartyKit host, for example:
+### 1. Cloudflare setup
+
+1. Create a free [Cloudflare account](https://dash.cloudflare.com/sign-up)
+2. Go to **Workers & Pages** and note your **workers.dev subdomain** (e.g. `parkthomp.workers.dev`)
+3. Create an API token at [API Tokens](https://dash.cloudflare.com/profile/api-tokens) using the **Edit Cloudflare Workers** template
+4. Copy your **Account ID** from the Cloudflare dashboard overview
+
+### 2. Configure environment
+
+Add these to `.env.local`:
 
 ```bash
-NEXT_PUBLIC_PARTYKIT_HOST=bekind-party.<your-account>.partykit.dev
+CLOUDFLARE_ACCOUNT_ID=your_account_id
+CLOUDFLARE_API_TOKEN=your_api_token
+PARTYKIT_DOMAIN=bekind-party.yourname.workers.dev
 ```
 
-### PartyKit
-
-Deploy the PartyKit server from this repo:
+### 3. Deploy PartyKit (cloud-prem)
 
 ```bash
-npx partykit deploy
+./scripts/deploy-partykit-cloud.sh
+```
+
+Or manually:
+
+```bash
+CLOUDFLARE_ACCOUNT_ID=your_account_id \
+CLOUDFLARE_API_TOKEN=your_api_token \
+npx partykit deploy --domain bekind-party.yourname.workers.dev
+```
+
+### 4. Configure Next.js (Vercel)
+
+Set this environment variable in Vercel:
+
+```bash
+NEXT_PUBLIC_PARTYKIT_HOST=bekind-party.yourname.workers.dev
 ```
 
 PartyKit stores only the hashed host token per room. Game scores are not persisted on the server.
+
+### Cursor + Cloudflare MCP
+
+This repo includes `.cursor/mcp.json` with Cloudflare MCP servers for deploying and managing Workers from Cursor. Restart Cursor after pulling, then authenticate when prompted on first use.
+
+Official setup guide: https://developers.cloudflare.com/agent-setup/prompt.md
