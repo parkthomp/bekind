@@ -11,14 +11,12 @@ type ConnectionStatus = "connecting" | "connected" | "disconnected";
 interface UseHostGameSocketOptions {
   roomId: string;
   hostToken: string;
-  enabled: boolean;
   onStateRequest: () => GameState;
 }
 
 export function useHostGameSocket({
   roomId,
   hostToken,
-  enabled,
   onStateRequest,
 }: UseHostGameSocketOptions) {
   const [status, setStatus] = useState<ConnectionStatus>("connecting");
@@ -43,7 +41,7 @@ export function useHostGameSocket({
       room: roomId,
       party: "main",
       query: { role: "host" as const },
-      startClosed: !enabled,
+      enabled: true,
       onOpen() {
         setStatus("connected");
         socketRef.current?.send(
@@ -96,21 +94,11 @@ export function useHostGameSocket({
         }
       },
     }),
-    [partykitHost, roomId, enabled]
+    [partykitHost, roomId]
   );
 
   const socket = usePartySocket(socketOptions);
   socketRef.current = socket;
-
-  useEffect(() => {
-    if (enabled && roomId) {
-      socket.reconnect();
-      return;
-    }
-
-    socket.close();
-    setStatus("disconnected");
-  }, [enabled, roomId, hostToken, partykitHost, socket]);
 
   const publishState = useCallback((state: GameState) => {
     const ws = socketRef.current;
@@ -156,6 +144,7 @@ export function useGuestGameSocket({ roomId, onState }: UseGuestGameSocketOption
       room: roomId,
       party: "main",
       query: { role: "guest" as const },
+      enabled: Boolean(roomId),
       onOpen() {
         setStatus("connected");
         socketRef.current?.send(JSON.stringify({ type: "state-request" }));

@@ -11,23 +11,35 @@ import {
   loadHostSession,
   saveHostSession,
 } from "./lib/storage";
-import type { HostSession } from "./lib/types";
+import type { GameState, HostSession } from "./lib/types";
 
-export default function Home() {
-  const {
-    state,
-    hydrated,
-    addPlayer,
-    removePlayer,
-    setBid,
-    setWon,
-    setCurrentRound,
-    toggleRoundComplete,
-    startGame,
-    resetGame,
-  } = useGameState();
+interface HostGameProps {
+  session: HostSession;
+  state: GameState;
+  addPlayer: (name: string) => void;
+  removePlayer: (index: number) => void;
+  setBid: (playerIndex: number, bid: number) => void;
+  setWon: (playerIndex: number, won: number) => void;
+  setCurrentRound: (roundIndex: number) => void;
+  toggleRoundComplete: (roundIndex: number) => void;
+  startGame: () => void;
+  resetGame: () => void;
+  onSessionReset: (session: HostSession) => void;
+}
 
-  const [session, setSession] = useState<HostSession | null>(null);
+function HostGame({
+  session,
+  state,
+  addPlayer,
+  removePlayer,
+  setBid,
+  setWon,
+  setCurrentRound,
+  toggleRoundComplete,
+  startGame,
+  resetGame,
+  onSessionReset,
+}: HostGameProps) {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [copied, setCopied] = useState(false);
   const stateRef = useRef(state);
@@ -36,68 +48,34 @@ export default function Home() {
     stateRef.current = state;
   }, [state]);
 
-  useEffect(() => {
-    if (!hydrated) {
-      return;
-    }
-
-    const existing = loadHostSession();
-    if (existing) {
-      setSession(existing);
-      return;
-    }
-
-    const created = createHostSession();
-    saveHostSession(created);
-    setSession(created);
-  }, [hydrated]);
-
   const getCurrentState = useCallback(() => stateRef.current, []);
 
   const { status, publishState } = useHostGameSocket({
-    roomId: session?.roomId ?? "",
-    hostToken: session?.hostToken ?? "",
-    enabled: Boolean(session),
+    roomId: session.roomId,
+    hostToken: session.hostToken,
     onStateRequest: getCurrentState,
   });
 
   useEffect(() => {
-    if (!hydrated || !session) {
-      return;
-    }
-
     publishState(state);
-  }, [state, hydrated, session, publishState]);
+  }, [state, publishState]);
 
   const handleReset = () => {
     resetGame();
     const created = createHostSession();
     saveHostSession(created);
-    setSession(created);
+    onSessionReset(created);
     setShowCancelModal(false);
   };
 
   const copyGuestLink = async () => {
-    if (!session) {
-      return;
-    }
-
     await navigator.clipboard.writeText(getGuestUrl(session.roomId));
     setCopied(true);
     window.setTimeout(() => setCopied(false), 2000);
   };
 
-  if (!hydrated || !session) {
-    return (
-      <main className='flex min-h-screen flex-col p-6 gap-12'>
-        <h1 className='text-4xl font-bold'>Be Kind to Your Neighbor</h1>
-        <p>Loading game...</p>
-      </main>
-    );
-  }
-
   return (
-    <main className='flex min-h-screen flex-col p-6 gap-12'>
+    <>
       <div className='flex flex-col gap-4'>
         <h1 className='text-4xl font-bold'>Be Kind to Your Neighbor</h1>
         <div className='flex flex-col gap-2 border border-white rounded-lg p-4'>
@@ -105,7 +83,9 @@ export default function Home() {
             Host connection:{" "}
             <span className='font-semibold text-white'>{status}</span>
           </p>
-          <p className='text-sm break-all'>Guest link: {getGuestUrl(session.roomId)}</p>
+          <p className='text-sm break-all'>
+            Guest link: {getGuestUrl(session.roomId)}
+          </p>
           <Button
             label={copied ? "copied!" : "copy guest link"}
             action={copyGuestLink}
@@ -143,6 +123,54 @@ export default function Home() {
           </div>
         </div>
       )}
+    </>
+  );
+}
+
+export default function Home() {
+  const game = useGameState();
+  const [session, setSession] = useState<HostSession | null>(null);
+
+  useEffect(() => {
+    if (!game.hydrated) {
+      return;
+    }
+
+    const existing = loadHostSession();
+    if (existing) {
+      setSession(existing);
+      return;
+    }
+
+    const created = createHostSession();
+    saveHostSession(created);
+    setSession(created);
+  }, [game.hydrated]);
+
+  if (!game.hydrated || !session) {
+    return (
+      <main className='flex min-h-screen flex-col p-6 gap-12'>
+        <h1 className='text-4xl font-bold'>Be Kind to Your Neighbor</h1>
+        <p>Loading game...</p>
+      </main>
+    );
+  }
+
+  return (
+    <main className='flex min-h-screen flex-col p-6 gap-12'>
+      <HostGame
+        session={session}
+        state={game.state}
+        addPlayer={game.addPlayer}
+        removePlayer={game.removePlayer}
+        setBid={game.setBid}
+        setWon={game.setWon}
+        setCurrentRound={game.setCurrentRound}
+        toggleRoundComplete={game.toggleRoundComplete}
+        startGame={game.startGame}
+        resetGame={game.resetGame}
+        onSessionReset={setSession}
+      />
     </main>
   );
 }
