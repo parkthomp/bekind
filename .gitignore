@@ -33,6 +33,7 @@ yarn-error.log*
 
 # partykit local dev state
 .partykit
+.wrangler
 
 # typescript
 *.tsbuildinfo

@@ -8,15 +8,14 @@ if [[ -f .env.local ]]; then
   set +a
 fi
 
-: "${CLOUDFLARE_ACCOUNT_ID:?Set CLOUDFLARE_ACCOUNT_ID in .env.local}"
 : "${CLOUDFLARE_API_TOKEN:?Set CLOUDFLARE_API_TOKEN in .env.local}"
-: "${PARTYKIT_DOMAIN:?Set PARTYKIT_DOMAIN in .env.local (e.g. bekind-party.yourname.workers.dev)}"
 
-echo "Deploying PartyKit to https://${PARTYKIT_DOMAIN} ..."
+PARTYKIT_DOMAIN="${PARTYKIT_DOMAIN:-bekind-party.parkert.workers.dev}"
 
-CLOUDFLARE_ACCOUNT_ID="$CLOUDFLARE_ACCOUNT_ID" \
+echo "Deploying PartyServer to https://${PARTYKIT_DOMAIN} via Wrangler ..."
+
 CLOUDFLARE_API_TOKEN="$CLOUDFLARE_API_TOKEN" \
-npx partykit deploy --domain "$PARTYKIT_DOMAIN"
+npx wrangler deploy --name bekind-party
 
 echo ""
 echo "Set this in Vercel:"

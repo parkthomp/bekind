@@ -7,12 +7,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "party": "partykit dev",
-    "party:deploy": "partykit deploy",
-    "party:deploy:cloud": "partykit deploy --domain $PARTYKIT_DOMAIN"
+    "party": "wrangler dev",
+    "party:deploy": "wrangler deploy",
+    "party:deploy:cloud": "./scripts/deploy-partykit-cloud.sh"
   },
   "dependencies": {
     "next": "14.0.3",
+    "partyserver": "^0.5.8",
     "partysocket": "^1.0.4",
     "react": "^18",
     "react-dom": "^18"
@@ -24,9 +25,9 @@
     "autoprefixer": "^10.0.1",
     "eslint": "^8",
     "eslint-config-next": "14.0.3",
-    "partykit": "^0.0.110",
     "postcss": "^8",
     "tailwindcss": "^3.3.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^4.110.0"
   }
 }

@@ -30,7 +30,7 @@ npm install
 cp .env.example .env.local
 ```
 
-3. Start PartyKit and Next.js in separate terminals:
+3. Start the realtime server and Next.js in separate terminals:
 
 ```bash
 npm run party
@@ -63,7 +63,9 @@ CLOUDFLARE_API_TOKEN=your_api_token
 PARTYKIT_DOMAIN=bekind-party.yourname.workers.dev
 ```
 
-### 3. Deploy PartyKit (cloud-prem)
+### 3. Deploy PartyKit (cloud-prem via Wrangler)
+
+PartyKit's managed `partykit deploy` does not work on Cloudflare's free plan (SQLite Durable Objects requirement). This project deploys the realtime server with Wrangler instead:
 
 ```bash
 ./scripts/deploy-partykit-cloud.sh
@@ -72,9 +74,7 @@ PARTYKIT_DOMAIN=bekind-party.yourname.workers.dev
 Or manually:
 
 ```bash
-CLOUDFLARE_ACCOUNT_ID=your_account_id \
-CLOUDFLARE_API_TOKEN=your_api_token \
-npx partykit deploy --domain bekind-party.yourname.workers.dev
+npx wrangler deploy
 ```
 
 ### 4. Configure Next.js (Vercel)

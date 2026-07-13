@@ -1,0 +1,25 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "bekind-party",
+  "main": "party/index.ts",
+  "account_id": "4202795e3aec26b2b77c858879d66a65",
+  "compatibility_date": "2024-11-01",
+  "workers_dev": true,
+  "dev": {
+    "port": 1999
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "Main",
+        "class_name": "GameServer"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["GameServer"]
+    }
+  ]
+}

@@ -1,4 +1,5 @@
-import type * as Party from "partykit/server";
+import { Server, routePartykitRequest } from "partyserver";
+import type { Connection, ConnectionContext } from "partyserver";
 import type { GameState } from "../app/lib/types";
 import { parseClientMessage } from "../app/lib/protocol";
 
@@ -18,35 +19,26 @@ async function hashToken(token: string): Promise<string> {
     .join("");
 }
 
-function send(connection: Party.Connection, message: Record<string, unknown>) {
+function send(connection: Connection, message: Record<string, unknown>) {
   connection.send(JSON.stringify(message));
 }
 
-function broadcastHostStatus(room: Party.Room, online: boolean) {
-  room.broadcast(JSON.stringify({ type: "host-status", online }));
-}
-
-function getConnectionRole(connection: Party.Connection): ConnectionRole {
+function getConnectionRole(connection: Connection): ConnectionRole {
   const state = connection.state as ConnectionState | null;
   return state?.role === "host" ? "host" : "guest";
 }
 
-export default class Server implements Party.Server {
+export class GameServer extends Server {
   private latestState: GameState | null = null;
   private hostOnline = false;
 
-  constructor(readonly room: Party.Room) {}
-
-  getConnectionTags(
-    connection: Party.Connection,
-    ctx: Party.ConnectionContext
-  ): string[] {
+  getConnectionTags(_connection: Connection, ctx: ConnectionContext): string[] {
     const role = this.getRoleFromRequest(ctx);
-    connection.setState({ role });
+    _connection.setState({ role });
     return [role];
   }
 
-  async onConnect(connection: Party.Connection) {
+  async onConnect(connection: Connection) {
     const role = getConnectionRole(connection);
 
     if (role === "guest") {
@@ -64,44 +56,42 @@ export default class Server implements Party.Server {
     send(connection, { type: "host-status", online: this.hostOnline });
   }
 
-  async onMessage(message: string | ArrayBuffer, sender: Party.Connection) {
+  async onMessage(connection: Connection, message: string | ArrayBuffer) {
     if (typeof message !== "string") {
       return;
     }
 
     const parsed = parseClientMessage(message);
     if (!parsed) {
-      send(sender, { type: "error", message: "Invalid message format" });
+      send(connection, { type: "error", message: "Invalid message format" });
       return;
     }
 
-    const role = getConnectionRole(sender);
+    const role = getConnectionRole(connection);
 
     switch (parsed.type) {
       case "register-host": {
         if (role !== "host") {
-          send(sender, { type: "error", message: "Only hosts can register" });
+          send(connection, { type: "error", message: "Only hosts can register" });
           return;
         }
 
         const tokenHash = await hashToken(parsed.hostToken);
-        const storedHash = await this.room.storage.get<string>(
-          HOST_TOKEN_HASH_KEY
-        );
+        const storedHash = await this.ctx.storage.get<string>(HOST_TOKEN_HASH_KEY);
 
         if (!storedHash) {
-          await this.room.storage.put(HOST_TOKEN_HASH_KEY, tokenHash);
+          await this.ctx.storage.put(HOST_TOKEN_HASH_KEY, tokenHash);
         } else if (storedHash !== tokenHash) {
-          send(sender, { type: "error", message: "Invalid host token" });
+          send(connection, { type: "error", message: "Invalid host token" });
           return;
         }
 
         this.hostOnline = true;
-        broadcastHostStatus(this.room, true);
-        send(sender, { type: "register-host-ok" });
+        this.broadcast(JSON.stringify({ type: "host-status", online: true }));
+        send(connection, { type: "register-host-ok" });
 
         if (this.latestState) {
-          send(sender, { type: "state", state: this.latestState });
+          send(connection, { type: "state", state: this.latestState });
         }
 
         return;
@@ -109,32 +99,30 @@ export default class Server implements Party.Server {
 
       case "state-update": {
         if (role !== "host") {
-          send(sender, { type: "error", message: "Guests cannot update state" });
+          send(connection, { type: "error", message: "Guests cannot update state" });
           return;
         }
 
         const tokenHash = await hashToken(parsed.hostToken);
-        const storedHash = await this.room.storage.get<string>(
-          HOST_TOKEN_HASH_KEY
-        );
+        const storedHash = await this.ctx.storage.get<string>(HOST_TOKEN_HASH_KEY);
 
         if (!storedHash || storedHash !== tokenHash) {
-          send(sender, { type: "error", message: "Invalid host token" });
+          send(connection, { type: "error", message: "Invalid host token" });
           return;
         }
 
         this.latestState = parsed.state;
         this.hostOnline = true;
-        this.room.broadcast(
+        this.broadcast(
           JSON.stringify({ type: "state", state: parsed.state }),
-          [sender.id]
+          [connection.id]
         );
         return;
       }
 
       case "state-request": {
         if (role !== "guest") {
-          send(sender, {
+          send(connection, {
             type: "error",
             message: "Only guests can request state",
           });
@@ -142,7 +130,7 @@ export default class Server implements Party.Server {
         }
 
         if (this.latestState) {
-          send(sender, { type: "state", state: this.latestState });
+          send(connection, { type: "state", state: this.latestState });
         } else if (this.hostOnline) {
           this.requestStateFromHost();
         }
@@ -152,27 +140,40 @@ export default class Server implements Party.Server {
     }
   }
 
-  async onClose(connection: Party.Connection) {
+  async onClose(connection: Connection) {
     if (getConnectionRole(connection) !== "host") {
       return;
     }
 
-    const hostStillConnected = [...this.room.getConnections("host")].length > 0;
+    const hostStillConnected = [...this.getConnections("host")].length > 0;
     if (!hostStillConnected) {
       this.hostOnline = false;
       this.latestState = null;
-      broadcastHostStatus(this.room, false);
+      this.broadcast(JSON.stringify({ type: "host-status", online: false }));
     }
   }
 
-  private getRoleFromRequest(ctx: Party.ConnectionContext): ConnectionRole {
+  private getRoleFromRequest(ctx: ConnectionContext): ConnectionRole {
     const role = new URL(ctx.request.url).searchParams.get("role") ?? "guest";
     return role === "host" ? "host" : "guest";
   }
 
   private requestStateFromHost() {
-    for (const host of this.room.getConnections("host")) {
+    for (const host of this.getConnections("host")) {
       send(host, { type: "state-request" });
     }
   }
 }
+
+export interface Env {
+  Main: DurableObjectNamespace<GameServer>;
+}
+
+export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    return (
+      (await routePartykitRequest(request, env)) ??
+      new Response("Not Found", { status: 404 })
+    );
+  },
+};
